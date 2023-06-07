@@ -1,0 +1,22 @@
+{
+    "manifest_version": 3,
+    "name": "DeFi Kingdoms Data Reader",
+    "version": "1.0",
+    "permissions": ["activeTab"],
+    "action": {
+     
+      "default_icon": {
+        "16": "./img/48.png",
+        "48": "./img/48.png",
+        "128": "./img/48.png"
+      }
+    },
+    "content_scripts": [
+        {
+          "matches": ["https://game.defikingdoms.com/*","https://beta.defikingdoms.com/*"],
+          "js": ["./js/content.js"],
+          "css": ["./styles/content.css"]
+        }
+       
+      ]
+  }
