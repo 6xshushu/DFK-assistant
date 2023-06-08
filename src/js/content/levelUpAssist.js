@@ -34,8 +34,8 @@ export function handleMutationsLevelUp(mutations) {
 // 处理添加的节点（第二个观察器）
 function handleAddedNodeLevelUp(node) {
     if (node.nodeType === Node.ELEMENT_NODE && checkNodeClassName(node, 'styles_heroID')) {
-        console.log('升级框中选择了英雄:', node);
-        console.log('可以获取英雄ID并新建按钮了');
+        // console.log('升级框中选择了英雄:', node);
+        // console.log('可以获取英雄ID并新建按钮了');
 
         levelUpHeroId = getHeroIdFromIdDom(node);
 
@@ -43,7 +43,7 @@ function handleAddedNodeLevelUp(node) {
 
     } else if (node.nodeType === Node.ELEMENT_NODE && checkNodeClassName(node, 'AddHeroClick_buttonRow')) {
         levelUpButtonLocatedNode = node;
-        console.log('levelUpButtonLocatedNode:', levelUpButtonLocatedNode);
+        // console.log('levelUpButtonLocatedNode:', levelUpButtonLocatedNode);
         
         addTheRecommandButton();
 
@@ -86,11 +86,11 @@ async function getRecommandedLevelUpStrategy() {
 
     let myHero = await fetchHeroWithId(levelUpHeroId);
 
-    console.log('myHero:', myHero);
+    // console.log('myHero:', myHero);
 
     let recData = chooseStatsToUpgrade(myHero);
 
-    console.log('recData:', recData);
+    // console.log('recData:', recData);
 
     levelUpFinalData = {
         comBatRec: recData.comBatStats,
@@ -113,10 +113,10 @@ function chooseStatsToUpgrade(hero) {
 
 
     let comBatStats = chooseStatsForCombat(hero);
-    console.log('comBatStats:', comBatStats);
+    // console.log('comBatStats:', comBatStats);
 
     let workStats = chooseStatsForWorker(hero);
-    console.log('workStats:', workStats);
+    // console.log('workStats:', workStats);
 
     return {
         comBatStats,

@@ -92,24 +92,7 @@ export function hideLoading(button, _text) {
     button.text(_text).removeAttr('disabled');
 }
 
-export async function fetchHeroWithId(_heroId) {
-
-    // console.log('按钮被点击了');
-    // console.log(mySummonHeroId);
-
-    let results = await getHeroInfoWithId(_heroId);
-    let hero = results.hero;
-    let heroProcessedInfo = normalizeHeroes([hero])
-
-    // console.log(heroProcessedInfo[0]);
-
-    return heroProcessedInfo[0];
-
-
-
-}
-
-function normalizeHeroes(_heroes) {
+export function normalizeHeroes(_heroes) {
     _heroes.forEach((hero) => {
         hero.summonerId = hero.summonerId.id;
         hero.assistantId = hero.assistantId.id;
@@ -133,6 +116,25 @@ function normalizeHeroes(_heroes) {
     });
     return _heroes;
 }
+
+export async function fetchHeroWithId(_heroId) {
+
+    // console.log('按钮被点击了');
+    // console.log(mySummonHeroId);
+
+    let results = await getHeroInfoWithId(_heroId);
+    let hero = results.hero;
+    let heroProcessedInfo = normalizeHeroes([hero])
+
+    // console.log(heroProcessedInfo[0]);
+
+    return heroProcessedInfo[0];
+
+
+
+}
+
+
 
 function calculateHeroSummonCost(summonerGen, totalHeroesAlreadySummoned) {
     const baseCost = 6;

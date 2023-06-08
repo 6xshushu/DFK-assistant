@@ -13,7 +13,8 @@ import {
     createButtonContainer,
     showLoading,
     hideLoading,
-    fetchHeroWithId
+    fetchHeroWithId,
+    normalizeHeroes
 } from "./pubFunc";
 
 
