@@ -1,113 +1,66 @@
 
 import $ from "cash-dom";
-import '../../scss/content.scss';
+
 import 'bootstrap/js/dist/dropdown';
 import Toast from 'bootstrap/js/dist/toast';
 import Tooltip from 'bootstrap/js/dist/tooltip';
 
+import {
+    checkNodeClassName
+    , traverseChildNodes,
+    getHeroIdFromIdDom,
+    createButton,
+    createButtonContainer,
+    showLoading,
+    hideLoading,
+    fetchHeroWithId
+} from "./pubFunc";
 
-import logo from '../../img/48.png';
 
-console.log('DFK Enhanced Assistant has been loaded.');
+
 
 import {
-    getHeroInfoWithId,
+    
     getAssistingHeroes
 } from '../graphql/getQlData';
 
 // 初始化MutationObserver
-const observer1 = new MutationObserver(handleMutations1);
-let observer2;
-let heroId = null;
-let selectHeroContainerNode;
-let finalHeroes;
-let headers, rows;
-// 选择要观察的DOM树的根元素
-const rootElement = document.documentElement;
 
-// 配置观察器
-const config = {
-    childList: true,
-    subtree: true,
-};
+let mySummonHeroId = null;
+let summonInfoLocatedNode;
+let finalAssistingHeroes;
+let summonInfoHeaders, summonInfoRows;
 
-// 开始观察
-observer1.observe(rootElement, config);
 
-// 处理DOM变化的回调函数
-function handleMutations1(mutations) {
+
+
+export function handleMutationsSummon(mutations) {
     for (const mutation of mutations) {
         // 检查是否有新添加的节点
         if (mutation.type === 'childList') {
             for (const addedNode of mutation.addedNodes) {
-                traverseChildNodes(addedNode, handleAddedNode);
+                traverseChildNodes(addedNode, handleAddedNodeSummon);
             }
             for (const removedNode of mutation.removedNodes) {
-                traverseChildNodes(removedNode, handleRemovedNode);
-            }
-        }
-    }
-}
-
-// 用于遍历子节点的递归函数
-function traverseChildNodes(node, callback) {
-    callback(node);
-    if (node.childNodes) {
-        for (const child of node.childNodes) {
-            traverseChildNodes(child, callback);
-        }
-    }
-}
-
-// 处理添加的节点
-function handleAddedNode(node) {
-    if (node.nodeType === Node.ELEMENT_NODE && checkNodeClassName(node, 'InfusionTab_heroSelectRow')) {
-        // console.log('召唤框被创建了创建:', node);
-
-        observer2 = new MutationObserver(handleMutations2);
-
-
-        observer2.observe(node.firstChild, config);
-
-
-    }
-}
-
-// 处理删除的节点
-function handleRemovedNode(node) {
-    if (node.nodeType === Node.ELEMENT_NODE && checkNodeClassName(node, 'InfusionTab_heroSelectRow')) {
-        // console.log('召唤框被删除了:', node);
-        observer2.disconnect();
-    }
-}
-
-function handleMutations2(mutations) {
-    for (const mutation of mutations) {
-        // 检查是否有新添加的节点
-        if (mutation.type === 'childList') {
-            for (const addedNode of mutation.addedNodes) {
-                traverseChildNodes(addedNode, handleAddedNode2);
-            }
-            for (const removedNode of mutation.removedNodes) {
-                traverseChildNodes(removedNode, handleRemovedNode2);
+                traverseChildNodes(removedNode, handleRemovedNodeSummon);
             }
         }
     }
 }
 
 // 处理添加的节点（第二个观察器）
-function handleAddedNode2(node) {
+function handleAddedNodeSummon(node) {
     if (node.nodeType === Node.ELEMENT_NODE && checkNodeClassName(node, 'styles_heroID')) {
         // console.log('召唤框中选择了英雄:', node);
         // console.log('可以获取英雄ID并新建按钮了');
 
-        heroId = getHeroTrueId(node);
+        mySummonHeroId = getHeroIdFromIdDom(node);
 
 
 
     } else if (node.nodeType === Node.ELEMENT_NODE && checkNodeClassName(node, 'AddHeroClick_buttonRow')) {
-        selectHeroContainerNode = node;
-        // console.log('selectHeroContainerNode:', selectHeroContainerNode);
+        summonInfoLocatedNode = node;
+        // console.log('summonInfoLocatedNode:', summonInfoLocatedNode);
 
         addTheMatchButton();
 
@@ -115,7 +68,7 @@ function handleAddedNode2(node) {
 }
 
 // 处理删除的节点（第二个观察器）
-function handleRemovedNode2(node) {
+function handleRemovedNodeSummon(node) {
     if (node.nodeType === Node.ELEMENT_NODE && checkNodeClassName(node, 'styles_heroID')) {
         // console.log('召唤框中删除了英雄:', node);
         // console.log('删除按钮了');
@@ -128,71 +81,58 @@ function handleRemovedNode2(node) {
 
 function addTheMatchButton() {
 
-    const showContainer = createContainer();
+    const showContainer = createButtonContainer('summonButtonContainer');
     // 创建按钮元素
-    const button = createButton();
+    const button = createButton('summonMatchButton', 'Find matching hero');
 
     showContainer.append(button);
 
-    // $(selectHeroContainerNode).after(showContainer);
+    // $(summonInfoLocatedNode).after(showContainer);
 
 
-    $(selectHeroContainerNode).after(showContainer);
-    button.on('click', getReconmmandedAssistingHeroes);
+    $(summonInfoLocatedNode).after(showContainer);
+    button.on('click', getRecommandedAssistingHeroes);
 }
 
-async function getReconmmandedAssistingHeroes() {
+async function getRecommandedAssistingHeroes() {
 
-    showLoading($('#myExtensionButton'));
+    showLoading($('#summonMatchButton'), 'Matching...');
 
-    let myHero = await fetchHeroWithId();
+    let myHero = await fetchHeroWithId(mySummonHeroId);
     let assistingHeroes = await fetchAssistingHeroes(myHero);
     let assistingHeroesTaged = tagAssistingHeroes(myHero, assistingHeroes);
     let sortedAssistingHeroes = sortAssistingHeroes(assistingHeroesTaged);
 
     // console.log(sortedAssistingHeroes);
 
-    finalHeroes = sortedAssistingHeroes;
+    finalAssistingHeroes = sortedAssistingHeroes;
 
-    headers = ['ID', 'A1', 'A2', 'P1', 'P2', 'SC', 'LV', 'P1', 'P2','NW'];
-    rows = finalHeroes.map(hero => hero.matchTable);
+    summonInfoHeaders = ['ID', 'A1', 'A2', 'P1', 'P2', 'SC', 'LV', 'P1', 'P2', 'NW'];
+    let tableData = finalAssistingHeroes.map(hero => hero.matchTable);
 
-    //  rows=dd.slice(0,10);
+    if (tableData.length > 12) {
+        summonInfoRows = tableData.slice(0, 12);
+    } else {
+        summonInfoRows = tableData;
+    }
 
-    hideLoading($('#myExtensionButton'));
+    hideLoading($('#summonMatchButton'), 'Matching...');
 
-    hideTheMatchButton();
+    $('#summonButtonContainer').remove();
 
-    let dropDown = createDropdown(headers, rows);
+    let dropDown = createDropdown(summonInfoHeaders, summonInfoRows);
 
 
-    $(selectHeroContainerNode).after(dropDown);
+    $(summonInfoLocatedNode).after(dropDown);
 
     activeTooltip();
 
 }
 
-function hideTheMatchButton() {
-    // 移除按钮
-    $('#myExtensionContainer').remove();
-}
-
-async function fetchHeroWithId() {
-
-    // console.log('按钮被点击了');
-    // console.log(heroId);
-
-    let results = await getHeroInfoWithId(heroId);
-    let hero = results.hero;
-    let heroProcessedInfo = normalizeHeroes([hero])
-
-    // console.log(heroProcessedInfo[0]);
-
-    return heroProcessedInfo[0];
 
 
 
-}
+
 
 async function fetchAssistingHeroes(_hero) {
     // console.log(_hero);
@@ -227,22 +167,7 @@ function sortAssistingHeroes(_assistingHeroesTaged) {
 
 }
 
-function calculateHeroSummonCost(summonerGen, totalHeroesAlreadySummoned) {
-    const baseCost = 6;
-    const perChildIncrease = 2;
-    const GenerationIncrease = 10;
 
-    let totalCost =
-        baseCost +
-        perChildIncrease * totalHeroesAlreadySummoned +
-        GenerationIncrease * summonerGen;
-
-    if (summonerGen === 0 && totalCost > 30) {
-        totalCost = 30;
-    }
-
-    return totalCost;
-};
 
 function tagAssistingHeroes(_hero, _assistingHeroes) {
     const targetSubClass = getPartnerFeature(_hero.subClass);
@@ -329,112 +254,14 @@ function getPartnerFeature(_feature) {
     }
 }
 
-function getHeroTrueId(node) {
-    // console.log(`${node}`)
-    let heroTrueId = processElement(node);
-    // console.log(heroTrueId);
-    return heroTrueId;
-}
-
-function processElement(element) {
-    const idText = $(element).text();
-    const idNumberMatch = idText.match(/#(\d+)/);
-
-    if (idNumberMatch) {
-        const idNumber = BigInt(idNumberMatch[1]);
-        const imgSrc = $(element).find('img').attr('src');
-
-        let resultNumber;
-
-        if (imgSrc.includes('jade')) {
-            resultNumber = idNumber + BigInt(2000000000000);
-        } else if (imgSrc.includes('crystal')) {
-            resultNumber = idNumber + BigInt(1000000000000);
-        } else if (imgSrc.includes('jewel')) {
-            resultNumber = idNumber;
-        }
-
-        if (resultNumber !== undefined) {
-            return resultNumber.toString();
-        }
-    }
-
-    return null;
-}
 
 
-function normalizeHeroes(_heroes) {
-    _heroes.forEach((hero) => {
-        hero.summonerId = hero.summonerId.id;
-        hero.assistantId = hero.assistantId.id;
-
-        if (hero.assistingPrice != null) {
-            let bigNum = BigInt(hero.assistingPrice);
-            let divisor = BigInt('1000000000000000000');
-            let result = bigNum / divisor;
-            let finalResult = Number(result);
-            hero.assistingPrice = finalResult;
-        } else {
-            hero.assistingPrice = 0;
-        }
-
-        hero.summonPrice = calculateHeroSummonCost(hero.generation, hero.summons);
-        hero.totalSummonPrice = hero.summonPrice + hero.assistingPrice;
-    });
-    return _heroes;
-}
-
-function checkNodeClassName(_node, _className) {
-    const fixedClassName = _className;
-    // 创建正则表达式，用于匹配类名
-    const regex = new RegExp(`\\b${fixedClassName}\\S*\\b`);
-
-    // 如果节点具有className属性且为字符串类型，则进行匹配
-    if (typeof _node.className === 'string') {
-        // 创建正则表达式，用于匹配类名
-        const regex = new RegExp(`\\b${fixedClassName}\\S*\\b`);
-
-        // 检查节点的类名是否包含固定值
-        if (_node.className.match(regex)) {
-            // 操作匹配的节点
-            // handleMatchedNode(node, _className);
-            return true;
-        }
-    }
-
-    return false;
-}
-// 创建按钮
-function createButton() {
-    return $('<button>')
-        .text('Find matching hero')
-        .attr('id', 'myExtensionButton')
-        .attr('type', 'button')
-        .addClass('btn btn-dark')
 
 
-}
 
-// 创建表格容器
-function createContainer() {
-    return $('<div>')
-        .attr('id', 'myExtensionContainer')
-        .addClass('d-flex')
-        .css({
-            justifyContent: 'center'
 
-        });
-}
 
-// 显示loading状态
-function showLoading(button) {
-    button.text('Matching...').attr('disabled', 'disabled');
-}
 
-// 隐藏loading状态
-function hideLoading(button) {
-    button.text('Matching...').removeAttr('disabled');
-}
 
 
 
@@ -447,20 +274,20 @@ function createDropdownButton() {
     //   .attr('aria-expanded', 'true')
 }
 
-function createTable(headers, rows) {
+function createTable(summonInfoHeaders, summonInfoRows) {
     const table = $('<table>').addClass('table table-striped table-hover mb-0 table-dark table-bordered text-center table-sm align-middle');
     const thead = $('<thead>');
     const tbody = $('<tbody>');
 
     const headerRow = $('<tr>');
 
-    headers.forEach(headerText => {
+    summonInfoHeaders.forEach(headerText => {
         $('<th>').text(headerText).appendTo(headerRow);
     });
 
     headerRow.appendTo(thead);
 
-    rows.forEach(rowData => {
+    summonInfoRows.forEach(rowData => {
         const tr = $('<tr>');
         const firstColumn = $('<th>').text(rowData[0]).appendTo(tr);
         // 添加点击事件处理器
@@ -486,11 +313,11 @@ function createTable(headers, rows) {
         $('<td>').text(rowData[5] > 0 ? '\u2713' : '').appendTo(tr);
 
         let levelDes;
-        if (rowData[6] = 0) {
+        if (rowData[6] == 0) {
             levelDes = '';
-        } else if (rowData[6] = 1) {
+        } else if (rowData[6] == 1) {
             levelDes = 'lv>5';
-        } else if (rowData[6] = 2) {
+        } else if (rowData[6] == 2) {
             levelDes = 'lv>10';
         }
 
@@ -502,17 +329,17 @@ function createTable(headers, rows) {
 
         tr.appendTo(tbody);
     });
-    
+
 
     const caption = $('<caption>')
-        .addClass('bg-dark text-white p-2 text-left')
+        .addClass('bg-dark text-white p-2 text-right')
         .text('? Explanation')
         .attr('data-bs-toggle', 'tooltip')
-        .attr('data-bs-placement', 'bottom')
+        .attr('data-bs-placement', 'right')
         .attr('data-bs-title', `A1 represents active1, P1 represents passive1, SC represents subClass, 
         LV represents level, P1 represents rental price, P2 represents summoning price, NW represents network. The mainClass, 
         summonRemain, and generation of the heroes in the table have already been matched. Click hero ID to copy.`)
-        
+
 
     table.append(caption);
     table.append(thead, tbody);
@@ -523,9 +350,6 @@ function createDropdownMenu(table) {
     return $('<div>')
         .addClass('dropdown-menu p-0 table-responsive')
         // .attr('id', 'heroSummonDropUp')
-        .css({
-            right: '2rem'
-        })
         .append(table)
 
 
@@ -533,16 +357,16 @@ function createDropdownMenu(table) {
 
 function activeTooltip() {
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new Tooltip(tooltipTriggerEl))
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new Tooltip(tooltipTriggerEl))
 }
 
-function createDropdown(headers, rows) {
+function createDropdown(summonInfoHeaders, summonInfoRows) {
     const dropdown = $('<div>')
         .attr('id', 'heroSummonDropUp')
         .addClass('dropup d-flex')
         .css({ 'justify-content': 'center' });
     const dropdownButton = createDropdownButton();
-    const table = createTable(headers, rows);
+    const table = createTable(summonInfoHeaders, summonInfoRows);
     const dropdownMenu = createDropdownMenu(table);
 
     dropdown.append(dropdownButton, dropdownMenu);
@@ -551,14 +375,14 @@ function createDropdown(headers, rows) {
 
 function createToast() {
     return $('<div>')
-        .addClass('toast position-fixed bottom-0 end-0 m-3')
+        .addClass('toast position-fixed bottom-0 end-0 m-3 bg-dark')
         .attr('role', 'alert')
         .attr('aria-live', 'assertive')
         .attr('aria-atomic', 'true')
         .css({ 'z-index': 9999 })
         .append(
             $('<div>')
-                .addClass('toast-header')
+                .addClass('toast-header bg-dark text-white')
                 .append(
                     $('<strong>')
                         .addClass('me-auto')

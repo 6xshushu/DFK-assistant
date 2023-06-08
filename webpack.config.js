@@ -5,7 +5,10 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 module.exports = {
   mode: 'production',
   entry: {
-    content: './src/js/content/content.js'
+    
+    styles: './src/js/public/styles.js',
+    entrance: './src/js/content/entrance.js',
+    
   },
   output: {
     filename: 'js/[name].js',
@@ -60,6 +63,10 @@ module.exports = {
         {
           from: './manifest.json', // 源文件路径
           to: path.resolve(__dirname, 'dist') // 输出目录
+        },
+        {
+          from: './src/img/128.png', // 源文件路径
+          to: path.resolve(__dirname, 'dist/img') // 输出目录
         }
       ],
     }),

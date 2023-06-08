@@ -37,6 +37,18 @@ query getHeroInfoWithId($id: ID!) {
     statsUnknown1
     element
     statsUnknown2
+   
+      strengthGrowthP
+      intelligenceGrowthP
+      wisdomGrowthP
+      luckGrowthP
+      agilityGrowthP
+      vitalityGrowthP
+      enduranceGrowthP
+      dexterityGrowthP
+    
+    
+
     pjStatus
     network
   }
@@ -77,6 +89,16 @@ query getAssistingHeroes($mainClass: Int!,$generation:Int!,$summonsRemaining:Int
     statsUnknown1
     element
     statsUnknown2
+
+    strengthGrowthP
+    intelligenceGrowthP
+    wisdomGrowthP
+    luckGrowthP
+    agilityGrowthP
+    vitalityGrowthP
+    enduranceGrowthP
+    dexterityGrowthP
+
     pjStatus
     network
   }

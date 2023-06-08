@@ -1,21 +1,27 @@
 {
     "manifest_version": 3,
-    "name": "DeFi Kingdoms Data Reader",
-    "version": "1.0",
-    "permissions": ["activeTab"],
+    "name": "DFK assistant",
+    "version": "1.1",
+    
     "action": {
      
       "default_icon": {
-        "16": "./img/48.png",
-        "48": "./img/48.png",
-        "128": "./img/48.png"
+        "16": "./img/128.png",
+        "48": "./img/128.png",
+        "128": "./img/128.png"
       }
     },
+    "icons": {
+      "16": "./img/128.png",
+      "48": "./img/128.png",
+      "128": "./img/128.png"
+    },
+    "description": "A game tool for Defi Kingdoms, mainly used to help players find the most suitable leased heroes when summoning currently.",
     "content_scripts": [
         {
-          "matches": ["https://game.defikingdoms.com/*","https://beta.defikingdoms.com/*"],
-          "js": ["./js/content.js"],
-          "css": ["./styles/content.css"]
+          "matches": ["https://game.defikingdoms.com/","https://beta.defikingdoms.com/"],
+          "js": ["./js/entrance.js"],
+          "css": ["./styles/styles.css"]
         }
        
       ]
