@@ -2,8 +2,11 @@
 import $ from "cash-dom";
 
 import {
-    getHeroInfoWithId
+    getHeroInfoWithId,
+    getUserProfileByName,
+    getWalletHeroes
 } from '../graphql/getQlData';
+
 
 export function checkNodeClassName(_node, _className) {
     const fixedClassName = _className;
@@ -110,8 +113,10 @@ export function normalizeHeroes(_heroes) {
         hero.summonPrice = calculateHeroSummonCost(hero.generation, hero.summons);
         hero.totalSummonPrice = hero.summonPrice + hero.assistingPrice;
 
-        hero.craft1=hero.statsUnknown1;
-        hero.craft2=hero.statsUnknown2;
+        hero.craft1 = hero.statsUnknown1;
+        hero.craft2 = hero.statsUnknown2;
+
+        hero.isOwn='';
 
     });
     return _heroes;
@@ -135,6 +140,22 @@ export async function fetchHeroWithId(_heroId) {
 }
 
 
+export async function fetchWalletHeroes(_walletAddr) {
+    // console.log(_hero);
+    
+    let results = await getWalletHeroes(_walletAddr);
+
+    let walletHeroes = results.heroes;
+    // console.log(results.heroes);
+
+    let walletHeroesProcessed = normalizeHeroes(walletHeroes);
+    // console.log(assistingHeroesProcessed);
+
+    return walletHeroesProcessed;
+
+}
+
+
 
 function calculateHeroSummonCost(summonerGen, totalHeroesAlreadySummoned) {
     const baseCost = 6;
@@ -152,3 +173,66 @@ function calculateHeroSummonCost(summonerGen, totalHeroesAlreadySummoned) {
 
     return totalCost;
 };
+
+// 查询和操作DOM元素的函数
+export async function getWalletAddrByName(_name) {
+    let userName=getUserName();
+    let result=await getUserProfileByName(userName);
+    let walletAddr=result.profiles[0].id;
+    // console.log(walletAddr);
+    return walletAddr;
+}
+
+
+export function getUserName() {
+    // 用于匹配类名以 PlayerProfileInfo_playerName 开头的元素
+    const classNamePrefix = 'PlayerProfileInfo_playerName';
+    const matchedElement = $(`[class^="${classNamePrefix}"]`);
+
+    let userName = null;
+    // 如果找到匹配的元素，可以继续获取或操作该元素
+    if (matchedElement.length > 0) {
+
+         userName = matchedElement.text();
+
+        // console.log('用户名为:', userName);
+    } else {
+        // console.log('未找到用户名');
+    }
+
+    return userName;
+}
+
+export function setStorageData(key, value) {
+    return new Promise((resolve) => {
+      chrome.storage.local.set({ [key]: value }, () => {
+        resolve();
+      });
+    });
+  }
+
+ export function getStorageData(key) {
+    return new Promise((resolve) => {
+      chrome.storage.local.get([key], (result) => {
+        resolve(result[key]);
+      });
+    });
+  }
+
+  export function removeStorageData(key) {
+    return new Promise((resolve) => {
+      chrome.storage.local.remove([key], () => {
+        resolve();
+      });
+    });
+  }
+
+
+  export async function getUserWalletAddr(){
+    let userWalletAddr=await getStorageData('userWalletAddr');
+    if(userWalletAddr==undefined){
+        userWalletAddr=await getWalletAddrByName();
+    }
+
+    return userWalletAddr;
+  }

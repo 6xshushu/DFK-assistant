@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "bootstrap": "^5.3.0",
-    "cash-dom": "^8.1.5"
+    "cash-dom": "^8.1.5",
+    "ethers": "5.7"
   }
 }

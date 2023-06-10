@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "DFK assistant",
-    "version": "1.1",
+    "version": "1.2",
     
     "action": {
      
@@ -21,8 +21,12 @@
         {
           "matches": ["https://game.defikingdoms.com/","https://beta.defikingdoms.com/"],
           "js": ["./js/entrance.js"],
-          "css": ["./styles/styles.css"]
+          "css": ["./styles/styles.css"],
+          "run_at": "document_end"
         }
        
+      ],
+      "permissions": [
+        "storage"
       ]
   }

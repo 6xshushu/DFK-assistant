@@ -14,7 +14,11 @@ import {
     showLoading,
     hideLoading,
     fetchHeroWithId,
-    normalizeHeroes
+    normalizeHeroes,
+    getStorageData,
+    getWalletAddrByName,
+    fetchWalletHeroes,
+    getUserWalletAddr
 } from "./pubFunc";
 
 
@@ -93,15 +97,32 @@ function addTheMatchButton() {
 
     $(summonInfoLocatedNode).after(showContainer);
     button.on('click', getRecommandedAssistingHeroes);
+
+
 }
 
 async function getRecommandedAssistingHeroes() {
 
     showLoading($('#summonMatchButton'), 'Matching...');
 
+    let userWalletAddr=await getUserWalletAddr();
+    // console.log(userWalletAddr);
+
     let myHero = await fetchHeroWithId(mySummonHeroId);
     let assistingHeroes = await fetchAssistingHeroes(myHero);
-    let assistingHeroesTaged = tagAssistingHeroes(myHero, assistingHeroes);
+    let walletHeroes = await fetchWalletHeroes(userWalletAddr);
+
+    walletHeroes.forEach(hero => {
+        hero.isOwn='own';
+    });
+
+    let filteredWalletHeroes = filterWalletHeroes(myHero, walletHeroes);
+
+    let allHeroes = assistingHeroes.concat(filteredWalletHeroes);
+
+    // console.log(allHeroes);
+
+    let assistingHeroesTaged = tagAssistingHeroes(myHero, allHeroes);
     let sortedAssistingHeroes = sortAssistingHeroes(assistingHeroesTaged);
 
     // console.log(sortedAssistingHeroes);
@@ -128,6 +149,19 @@ async function getRecommandedAssistingHeroes() {
 
     activeTooltip();
 
+}
+
+function filterWalletHeroes(_hero,_heroes) {
+    const targetMainClass = getPartnerFeature(_hero.mainClass);
+
+    const targetGeneration = _hero.generation;
+    const targetSummonsRemaining = _hero.summonsRemaining;
+
+    let results = _heroes.filter(hero => {
+        return hero.mainClass == targetMainClass && hero.generation <= targetGeneration && hero.summonsRemaining >= targetSummonsRemaining;
+    });
+
+    return results;
 }
 
 
@@ -233,8 +267,15 @@ function tagAssistingHeroes(_hero, _assistingHeroes) {
             hero.matchTable.push(0)
         }
 
-        hero.matchTable.push(hero.assistingPrice);
-        hero.matchTable.push(hero.summonPrice);
+        if(hero.isOwn=='own'){
+            hero.matchTable.push('own');
+            hero.matchTable.push('own');
+        }
+        else{
+            hero.matchTable.push(hero.assistingPrice);
+            hero.matchTable.push(hero.summonPrice);
+        }
+        
         hero.matchTable.push(hero.network);
         // count.push(score);
     }
