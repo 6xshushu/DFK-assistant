@@ -15,17 +15,18 @@ import {
     hideLoading,
     fetchHeroWithId,
     normalizeHeroes,
-    getStorageData,
-    getWalletAddrByName,
     fetchWalletHeroes,
-    getUserWalletAddr
+    getWalletAddrByName,
+    getShortId,
+    createToast,
+    getUserName
 } from "./pubFunc";
 
 
 
 
 import {
-    
+
     getAssistingHeroes
 } from '../graphql/getQlData';
 
@@ -60,6 +61,9 @@ function handleAddedNodeSummon(node) {
         // console.log('可以获取英雄ID并新建按钮了');
 
         mySummonHeroId = getHeroIdFromIdDom(node);
+        if (!mySummonHeroId) {
+            console.log('从dom获取用户选择的英雄ID失败');
+        }
 
 
 
@@ -104,16 +108,31 @@ function addTheMatchButton() {
 async function getRecommandedAssistingHeroes() {
 
     showLoading($('#summonMatchButton'), 'Matching...');
+    let assistingHeroes, walletHeroes;
+    let myHero;
+    try {
 
-    let userWalletAddr=await getUserWalletAddr();
-    // console.log(userWalletAddr);
+        // console.log(userWalletAddr);
+        myHero = await fetchHeroWithId(mySummonHeroId);
+        // let assistingHeroes = await fetchAssistingHeroes(myHero);
 
-    let myHero = await fetchHeroWithId(mySummonHeroId);
-    let assistingHeroes = await fetchAssistingHeroes(myHero);
-    let walletHeroes = await fetchWalletHeroes(userWalletAddr);
+        let userName = getUserName();
+        let userWalletAddr = await getWalletAddrByName(userName);
+        // let walletHeroes = await fetchWalletHeroes(userWalletAddr);
+
+        [assistingHeroes, walletHeroes] = await Promise.all([
+            fetchAssistingHeroes(myHero),
+            fetchWalletHeroes(userWalletAddr),
+        ]);
+
+    } catch (error) {
+        console.log('获取assistingHeroes和wallet heroes失败');
+        throw error;
+    }
+
 
     walletHeroes.forEach(hero => {
-        hero.isOwn='own';
+        hero.isOwn = 'own';
     });
 
     let filteredWalletHeroes = filterWalletHeroes(myHero, walletHeroes);
@@ -127,16 +146,18 @@ async function getRecommandedAssistingHeroes() {
 
     // console.log(sortedAssistingHeroes);
 
-    finalAssistingHeroes = sortedAssistingHeroes;
+    finalAssistingHeroes = sortedAssistingHeroes.filter(hero => hero.network != 'hmy');
 
     summonInfoHeaders = ['ID', 'A1', 'A2', 'P1', 'P2', 'SC', 'LV', 'P1', 'P2', 'NW'];
     let tableData = finalAssistingHeroes.map(hero => hero.matchTable);
 
-    if (tableData.length > 12) {
-        summonInfoRows = tableData.slice(0, 12);
-    } else {
-        summonInfoRows = tableData;
-    }
+    // if (tableData.length > 12) {
+    //     summonInfoRows = tableData.slice(0, 12);
+    // } else {
+    //     summonInfoRows = tableData;
+    // }
+
+    summonInfoRows = tableData;
 
     hideLoading($('#summonMatchButton'), 'Matching...');
 
@@ -151,7 +172,8 @@ async function getRecommandedAssistingHeroes() {
 
 }
 
-function filterWalletHeroes(_hero,_heroes) {
+
+function filterWalletHeroes(_hero, _heroes) {
     const targetMainClass = getPartnerFeature(_hero.mainClass);
 
     const targetGeneration = _hero.generation;
@@ -217,7 +239,8 @@ function tagAssistingHeroes(_hero, _assistingHeroes) {
         let hero = _assistingHeroes[i];
         hero.score = 0;
         hero.matchDesc = "";
-        hero.matchTable = [hero.id];
+        let shortId = getShortId(hero.id);
+        hero.matchTable = [shortId];
 
         if (hero.active1 == targetAcitve1) {
             hero.score += 1;
@@ -267,15 +290,15 @@ function tagAssistingHeroes(_hero, _assistingHeroes) {
             hero.matchTable.push(0)
         }
 
-        if(hero.isOwn=='own'){
+        if (hero.isOwn == 'own') {
             hero.matchTable.push('own');
             hero.matchTable.push('own');
         }
-        else{
+        else {
             hero.matchTable.push(hero.assistingPrice);
             hero.matchTable.push(hero.summonPrice);
         }
-        
+
         hero.matchTable.push(hero.network);
         // count.push(score);
     }
@@ -317,7 +340,7 @@ function createDropdownButton() {
 }
 
 function createTable(summonInfoHeaders, summonInfoRows) {
-    const table = $('<table>').addClass('table table-striped table-hover mb-0 table-dark table-bordered text-center table-sm align-middle');
+    const table = $('<table>').addClass('table table-striped table-hover mb-0 table-dark table-bordered text-center align-middle');
     const thead = $('<thead>');
     const tbody = $('<tbody>');
 
@@ -373,28 +396,54 @@ function createTable(summonInfoHeaders, summonInfoRows) {
     });
 
 
-    const caption = $('<caption>')
-        .addClass('bg-dark text-white p-2 text-right')
-        .text('? Explanation')
-        .attr('data-bs-toggle', 'tooltip')
-        .attr('data-bs-placement', 'right')
-        .attr('data-bs-title', `A1 represents active1, P1 represents passive1, SC represents subClass, 
-        LV represents level, P1 represents rental price, P2 represents summoning price, NW represents network. The mainClass, 
-        summonRemain, and generation of the heroes in the table have already been matched. Click hero ID to copy.`)
+    // const caption = $('<caption>')
+    //     .addClass('bg-dark text-white p-2 text-right')
+    //     .text('? Explanation')
+    //     .attr('data-bs-toggle', 'tooltip')
+    //     .attr('data-bs-placement', 'right')
+    //     .attr('data-bs-title', `A1 represents active1, P1 represents passive1, SC represents subClass, 
+    //     LV represents level, P1 represents rental price, P2 represents summoning price, NW represents network. The mainClass, 
+    //     summonRemain, and generation of the heroes in the table have already been matched. Click hero ID to copy.`)
 
 
-    table.append(caption);
+    // table.append(caption);
     table.append(thead, tbody);
+
+
     return table;
 }
 
 function createDropdownMenu(table) {
-    return $('<div>')
-        .addClass('dropdown-menu p-0 table-responsive')
-        // .attr('id', 'heroSummonDropUp')
-        .append(table)
 
+    const tableDescription = $('<p></p>');
+    tableDescription.text('? Explanation')
+        .addClass('text-start')
+        .addClass('bg-dark text-white p-0')
+        .css({
+            fontSize: '0.8rem',
+            marginBottom: '0.5rem',
+            marginTop: '0.5rem'
+        })
+        .attr('data-bs-toggle', 'tooltip')
+        .attr('data-bs-placement', 'right')
+        .attr('data-bs-title', `A1 represents active1, P1 represents passive1, SC represents subClass, 
+        LV represents level, P1 represents rental price, P2 represents summoning price, NW represents network. The mainClass, 
+        summonRemain, and generation of the heroes in the table have already been matched. Click hero ID to copy.`);
 
+    const dropdownMenu = $('<div>')
+        .css({
+            height: '380px', // 设置容器高度，根据需要调整
+            overflowY: 'scroll' // 设置垂直滚动条
+        })
+        .addClass('bg-dark')
+        .append(table);
+
+    const infoBlock = $('<div>')
+        .addClass('dropdown-menu p-0 table-responsive bg-dark')
+        .append(dropdownMenu)
+        .append(tableDescription);
+
+    return infoBlock;
 }
 
 function activeTooltip() {
@@ -415,31 +464,4 @@ function createDropdown(summonInfoHeaders, summonInfoRows) {
     return dropdown;
 }
 
-function createToast() {
-    return $('<div>')
-        .addClass('toast position-fixed bottom-0 end-0 m-3 bg-dark')
-        .attr('role', 'alert')
-        .attr('aria-live', 'assertive')
-        .attr('aria-atomic', 'true')
-        .css({ 'z-index': 9999 })
-        .append(
-            $('<div>')
-                .addClass('toast-header bg-dark text-white')
-                .append(
-                    $('<strong>')
-                        .addClass('me-auto')
-                        .text('Hint')
-                )
-                .append(
-                    $('<button>')
-                        .addClass('btn-close')
-                        .attr('type', 'button')
-                        .attr('data-bs-dismiss', 'toast')
-                        .attr('aria-label', 'Close')
-                )
-        )
-        .append(
-            $('<div>')
-                .addClass('toast-body')
-        );
-}
+

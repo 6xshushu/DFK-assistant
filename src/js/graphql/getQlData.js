@@ -47,6 +47,7 @@ query getHeroInfoWithId($id: ID!) {
       enduranceGrowthP
       dexterityGrowthP
 
+
       strength
 intelligence
 wisdom
@@ -56,7 +57,7 @@ vitality
 endurance
 dexterity
     
-    
+background
 
     pjStatus
     network
@@ -108,6 +109,8 @@ query getAssistingHeroes($mainClass: Int!,$generation:Int!,$summonsRemaining:Int
     enduranceGrowthP
     dexterityGrowthP
 
+    
+
     strength
 intelligence
 wisdom
@@ -116,6 +119,8 @@ agility
 vitality
 endurance
 dexterity
+
+background
 
     pjStatus
     network
@@ -131,7 +136,7 @@ query getUserProfileByName($name: String!) {
   profiles(where: {name: $name}) {
     id
     name
-    nftId
+   
     collectionId
     picUri
   }
@@ -191,6 +196,8 @@ query getWalletHeroes($owner: String!) {
       endurance
       dexterity
 
+      background
+
     pjStatus
     network
   }
@@ -198,54 +205,58 @@ query getWalletHeroes($owner: String!) {
 `;
 
 
-// console.log(getWalletHeroes);
-
-
-export async function getHeroInfoWithId(_heroId) {
-  try {
-    const variables = { 'id': _heroId };
-    const response = await client.request(getHeroInfoWithId_gql, variables);
-    return response;
-  } catch (error) {
-    console.error('Error fetching getHeroInfoWithId:', error);
-    throw error;
-  }
+export function getHeroInfoWithId(_heroId) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const variables = { 'id': _heroId };
+      const response = await client.request(getHeroInfoWithId_gql, variables);
+      resolve(response);
+    } catch (error) {
+      console.error('Error fetching getHeroInfoWithId:', error);
+      reject(error);
+    }
+  });
 }
 
-export async function getAssistingHeroes(_targetMainClass, _targetGeneration, _targetSummonsRemaining) {
-  try {
-
-    const variables = {
-      'mainClass': _targetMainClass,
-      'generation': _targetGeneration, 'summonsRemaining': _targetSummonsRemaining
-    };
-    const response = await client.request(getAssistingHeroes_gql, variables);
-    // console.log(response);
-    return response;
-  } catch (error) {
-    console.error('Error fetching getAssistingHeroes:', error);
-    throw error;
-  }
+export function getAssistingHeroes(_targetMainClass, _targetGeneration, _targetSummonsRemaining) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const variables = {
+        'mainClass': _targetMainClass,
+        'generation': _targetGeneration,
+        'summonsRemaining': _targetSummonsRemaining
+      };
+      const response = await client.request(getAssistingHeroes_gql, variables);
+      resolve(response);
+    } catch (error) {
+      console.error('Error fetching getAssistingHeroes:', error);
+      reject(error);
+    }
+  });
 };
 
-export async function getUserProfileByName(_name) {
-  try {
-    const variables = { 'name': _name };
-    const response = await client.request(getUserProfileByName_gql, variables);
-    return response;
-  } catch (error) {
-    console.error('Error fetching getHeroInfoWithId:', error);
-    throw error;
-  }
+export function getUserProfileByName(_name) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const variables = { 'name': _name };
+      const response = await client.request(getUserProfileByName_gql, variables);
+      resolve(response);
+    } catch (error) {
+      console.error('Error fetching getHeroInfoWithId:', error);
+      reject(error);
+    }
+  });
 }
 
-export async function getWalletHeroes(_walletAddr) {
-  try {
-    const variables = { 'owner': _walletAddr };
-    const response = await client.request(getWalletHeroes_gql, variables);
-    return response;
-  } catch (error) {
-    console.error('Error fetching getHeroInfoWithId:', error);
-    throw error;
-  }
+export function getWalletHeroes(_walletAddr) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const variables = { 'owner': _walletAddr };
+      const response = await client.request(getWalletHeroes_gql, variables);
+      resolve(response);
+    } catch (error) {
+      console.error('Error fetching getHeroInfoWithId:', error);
+      reject(error);
+    }
+  });
 }

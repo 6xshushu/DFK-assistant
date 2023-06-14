@@ -1,0 +1,13 @@
+{
+    "rpc": {
+        "dfk": {
+            "dfkRpc": "https://subnets.avax.network/defi-kingdoms/dfk-chain/rpc",
+            "poktRpc": "https://avax-dfk.gateway.pokt.network/v1/lb/6244818c00b9f0003ad1b619/ext/bc/q2aTwKuyzgs8pynF7UXBZCU7DejbZbZ6EUyHr3JQzYgwNPUPi/rpc"
+        },
+        "klaytn": {
+            "poktRpc": "https://klaytn-rpc.gateway.pokt.network/",
+            "klaytnRpc2": "https://public-node-api.klaytnapi.com/v1/cypress",
+            "klaytnRpc": "https://klaytn.blockpi.network/v1/rpc/public"
+        }
+    }
+}

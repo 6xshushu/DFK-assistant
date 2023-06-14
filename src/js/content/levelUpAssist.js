@@ -1,5 +1,6 @@
 
 import $ from "cash-dom";
+import Tooltip from 'bootstrap/js/dist/tooltip';
 
 import {
     checkNodeClassName
@@ -14,7 +15,6 @@ import {
 
 let levelUpHeroId = null,
     levelUpButtonLocatedNode,
-    levelUpInfoLocatedNode,
     levelUpFinalData;
 
 export function handleMutationsLevelUp(mutations) {
@@ -104,6 +104,8 @@ async function getRecommandedLevelUpStrategy() {
     $('#levelUpRecButton').remove();
 
     showTheInfo();
+
+    activeTooltip();
 
 }
 
@@ -307,8 +309,24 @@ function showTheInfo() {
     table.append(tbody);
     infoBlock.append(table);
 
-    // 5. 表格下面有一段文案说明。
     const tableDescription = $('<p></p>');
+    tableDescription.text('? Explanation')
+        .addClass('text-start')
+        .addClass('bg-dark text-white p-0')
+        .css({
+            fontSize: '0.8rem',
+            marginBottom: '0.5rem',
+            marginTop: '0.5rem'
+        })
+        .attr('data-bs-toggle', 'tooltip')
+        .attr('data-bs-placement', 'right')
+        .attr('data-bs-title', `If your currently selected hero is positioned as a worker, 
+        it is recommended that you upgrade stats that can increase his work efficiency. 
+        If your selected hero is positioned as a fighter, 
+        it is recommended that you upgrade attributes that can increase his combat ability.
+        The table above lists the recommended stats to add points to, 
+        as well as the stats required for different types of worker jobs.`);
+
     infoBlock.append(tableDescription);
 
     // 6. 将这个信息块插入到原始网页的某个特定 DOM 前面。
@@ -318,3 +336,7 @@ function showTheInfo() {
 
 
 
+function activeTooltip() {
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new Tooltip(tooltipTriggerEl))
+}

@@ -42,7 +42,7 @@ module.exports = {
         exclude: /node_modules/,
         use: [
           {
-            loader: 'file-loader',
+            loader: 'json-loader',
             options: {
               name: '[name].[ext]',
               outputPath: (url, resourcePath, context) => {
