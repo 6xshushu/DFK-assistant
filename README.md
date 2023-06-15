@@ -10,3 +10,6 @@ Function 1: help to find the best summon assisting hero.
 Function 2: help to select stats when leveling up hero.
 ![l1](https://github.com/6xshushu/DFK-assistant/assets/5692511/1c412ffe-3868-48cc-8e09-2b777c2dc5de)
 ![l2](https://github.com/6xshushu/DFK-assistant/assets/5692511/c7e2fdcd-4def-4f1b-b35d-a1233f22af15)
+
+Function 3: team recommendations for playing duel mini-games.
+![微信图片_20230615104040](https://github.com/6xshushu/DFK-assistant/assets/5692511/8f5e9efc-27aa-4930-91d9-5e473df82b32)
