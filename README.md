@@ -1,6 +1,10 @@
 # DFK-assistant
 A tool for enhancing efficiency in DFK gaming.
 
+instal from chrome extension shop.
+[https://chrome.google.com/webstore/detail/dfk-assistant/hafniohphlkaploekgeojkkeohadfoeo](https://chrome.google.com/webstore/detail/dfk-assistant/hafniohphlkaploekgeojkkeohadfoeo)
+
+
 Function 1: help to find the best summon assisting hero.
 
 ![d1](https://github.com/6xshushu/DFK-assistant/assets/5692511/ee4a6f83-dff9-4b08-af3f-468ba53ad1bc)
