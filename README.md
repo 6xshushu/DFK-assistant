@@ -1,7 +1,7 @@
 # DFK-assistant
 A tool for enhancing efficiency in DFK gaming.
 
-instal from chrome extension shop.
+install from chrome extension shop.
 [https://chrome.google.com/webstore/detail/dfk-assistant/hafniohphlkaploekgeojkkeohadfoeo](https://chrome.google.com/webstore/detail/dfk-assistant/hafniohphlkaploekgeojkkeohadfoeo)
 
 
