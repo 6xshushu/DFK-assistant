@@ -1,7 +1,10 @@
 
 import chainConfig from '../../config/chainInfo.json';
 import {ethers} from 'ethers';
-import { getContractDuelS4 } from './getContract.js';
+import { 
+    getContractDuelS4,
+    getContractAssistingAuctionUpgradeable
+ } from './getContract.js';
 
 
 
@@ -21,6 +24,42 @@ export function getRpc(_chain) {
 
 export function getProvider(_chain) {
     return new ethers.providers.JsonRpcProvider(getRpc(_chain));
+}
+
+export async function getAssistingAuctionData(_chain,_heroIdList){
+    const provider = getProvider(_chain);
+    const contract = getContractAssistingAuctionUpgradeable(provider,_chain);
+
+    let result;
+    try {
+        result=await tryReadRequest(
+            () => contract.getAuctions(_heroIdList), 2
+        )
+    } catch (error) {
+        console.log(`获取${_chain} assisting auction data 失败`);
+        throw error;
+        
+    }
+    
+    return result;
+}
+
+export async function isAssistingOnAucntion(_chain,_heroId){
+    const provider = getProvider(_chain);
+    const contract = getContractAssistingAuctionUpgradeable(provider,_chain);
+
+    let result;
+    try {
+        result=await tryReadRequest(
+            () => contract.isOnAuction(_heroId), 2
+        )
+    } catch (error) {
+        console.log(`获取${_chain} assisting auction data 失败`);
+        throw error;
+        
+    }
+    
+    return result;
 }
 
 export async function getHeroDuelCountForDay(_chain, _heroIds, _duelType) {

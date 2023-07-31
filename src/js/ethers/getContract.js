@@ -24,8 +24,21 @@
 import {ethers} from 'ethers';
 
 import abiDuelS4 from "../../abi/DuelS4.json"
+import abiAssistingAuctionUpgradeable from "../../abi/AssistingAuctionUpgradeable.json"
 import contractAddrs from "../../config/contract.json"
 
+export function getContractAssistingAuctionUpgradeable(_currentRpc,_chain){
+    let contractAddr;
+    if(_chain=='dfk'){
+        contractAddr=contractAddrs.dfk.AssistingAuction;
+    }else if(_chain=='kla'){
+        contractAddr=contractAddrs.klaytn.AssistingAuction;
+    }
+
+    const  provider  = _currentRpc;
+    const contract = new ethers.Contract(contractAddr, abiAssistingAuctionUpgradeable, provider);
+    return contract;
+}
 
 export function getContractDuelS4(_currentRpc,_chain){
     let contractAddr;

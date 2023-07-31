@@ -1,8 +1,10 @@
 {
     "dfk":{
-        "duelS4":"0xb7fe0195808E620A71672bcCa853cD848f906621"
+        "duelS4":"0xb7fe0195808E620A71672bcCa853cD848f906621",
+        "AssistingAuction":"0x8101CfFBec8E045c3FAdC3877a1D30f97d301209"
     },
     "klaytn":{
-        "duelS4":"0x338D7Dfb8E44c39Bfdfe4967CB79B08188dEA3C0"
+        "duelS4":"0x338D7Dfb8E44c39Bfdfe4967CB79B08188dEA3C0",
+        "AssistingAuction":"0xA2cef1763e59198025259d76Ce8F9E60d27B17B5"
     }
 }

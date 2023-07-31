@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "DFK assistant",
-    "version": "1.3",
+    "version": "1.4",
     
     "action": {
      
@@ -16,7 +16,7 @@
       "48": "./img/128.png",
       "128": "./img/128.png"
     },
-    "description": "A game tool for Defi Kingdoms, mainly used to help players find the most suitable leased heroes when summoning currently.",
+    "description": "The DFK Assistant is a tool designed for DFK players, primarily aimed at enhancing the efficiency of players during gameplay.",
     "content_scripts": [
         {
           "matches": ["https://game.defikingdoms.com/","https://beta.defikingdoms.com/"],

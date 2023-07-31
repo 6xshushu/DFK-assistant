@@ -22,7 +22,10 @@ import {
     getUserName
 } from "./pubFunc";
 
-
+import {
+    getAssistingAuctionData,
+    isAssistingOnAucntion
+} from "../ethers/getChainData"
 
 
 import {
@@ -130,6 +133,11 @@ async function getRecommandedAssistingHeroes() {
         throw error;
     }
 
+    console.log(`assistingHeroes:${assistingHeroes.length}`);
+
+    let assistingHeroesRealOnAuction = await filterAssistingHeroesRealOnAuction(assistingHeroes);
+
+    console.log(`assistingHeroesRealOnAuction:${assistingHeroesRealOnAuction.length}`);
 
     walletHeroes.forEach(hero => {
         hero.isOwn = 'own';
@@ -137,18 +145,18 @@ async function getRecommandedAssistingHeroes() {
 
     let filteredWalletHeroes = filterWalletHeroes(myHero, walletHeroes);
 
-    let allHeroes = assistingHeroes.concat(filteredWalletHeroes);
+    let allHeroes = assistingHeroesRealOnAuction.concat(filteredWalletHeroes);
 
     // console.log(allHeroes);
 
     let assistingHeroesTaged = tagAssistingHeroes(myHero, allHeroes);
-    let sortedAssistingHeroes = sortAssistingHeroes(assistingHeroesTaged);
+    let finalAssistingHeroes = sortAssistingHeroes(assistingHeroesTaged);
 
     // console.log(sortedAssistingHeroes);
 
-    finalAssistingHeroes = sortedAssistingHeroes.filter(hero => hero.network != 'hmy');
+    // finalAssistingHeroes = sortedAssistingHeroes.filter(hero => hero.network != 'hmy');
 
-    summonInfoHeaders = ['ID', 'A1', 'A2', 'P1', 'P2', 'SC', 'LV', 'P1', 'P2', 'NW'];
+    summonInfoHeaders = ['ID', 'A1', 'A2', 'P1', 'P2', 'SC', 'LV', 'F1', 'F2', 'NW'];
     let tableData = finalAssistingHeroes.map(hero => hero.matchTable);
 
     // if (tableData.length > 12) {
@@ -170,6 +178,104 @@ async function getRecommandedAssistingHeroes() {
 
     activeTooltip();
 
+}
+
+async function filterAssistingHeroesRealOnAuction(_heroes) {
+    const dfkHeroes = _heroes.filter(hero => hero.network == 'dfk');
+    const klaytnHeroes = _heroes.filter(hero => hero.network == 'kla');
+    // const hmyHeroes = _heroes.filter(hero => hero.network == 'hmy');
+
+    // console.log(dfkHeroes.length);
+    // console.log(klaytnHeroes.length);
+    // console.log(hmyHeroes.length);
+
+    // 使用 map 函数提取 id
+    const dfkIds = dfkHeroes.map(hero => hero.id);
+    const klaytnIds = klaytnHeroes.map(hero => hero.id);
+
+    // console.log(dfkIds);
+    // console.log(klaytnIds);
+
+    let dfkAuctionResult = [], klaytnAuctionResult = [];
+
+    try {
+        if (dfkIds.length > 0) {
+            dfkAuctionResult = await getAssistingAuctionData('dfk', dfkIds);
+        }
+
+    } catch (error) {
+        console.log('dfk getAuctions error');
+        dfkAuctionResult = [];
+        // throw error;
+    }
+
+
+    try {
+        if (klaytnIds.length > 0) {
+            klaytnAuctionResult = await getAssistingAuctionData('kla', klaytnIds);
+        }
+    } catch (error) {
+        console.log('klay getAuctions error');
+        klaytnAuctionResult = [];
+        // throw error;
+    }
+
+
+
+    // console.log(dfkAuctionResult);
+    // console.log(klaytnAuctionResult);
+
+    // let requestsDfk = dfkIds.map(id => getAuctionStatus('dfk',id));
+    // let requestsKlaytn = klaytnIds.map(id => getAuctionStatus('kla',id));
+
+    // let filteredDfkHeroes,filteredKlaytnHeroes;
+    // await Promise.all(requestsDfk).then(results => {
+    //     console.log(results)
+    //     filteredDfkHeroes = dfkHeroes.filter((hero, index) => results[index]);
+    //     console.log(filteredDfkHeroes);
+    // });
+
+    // await Promise.all(requestsKlaytn).then(results => {
+    //     console.log(results)
+    //     filteredKlaytnHeroes = klaytnHeroes.filter((hero, index) => results[index]);
+    //     console.log(filteredKlaytnHeroes);
+    // });
+
+    // console.log(`filteredDfkHeroes:${filteredDfkHeroes.length}`);
+    // console.log(`filteredKlaytnHeroes:${filteredKlaytnHeroes.length}`);
+
+    // const finalHeroes=filteredDfkHeroes.concat(filteredKlaytnHeroes);
+
+
+    const allAuctions = dfkAuctionResult.concat(klaytnAuctionResult);
+
+    const finalHeroes = _heroes.filter(hero1 => {
+        // 在 array2 中查找具有相同 id 的 hero
+        const aucFind = allAuctions.find(auction => Number(auction.tokenId) == Number(hero1.id));
+
+        // 如果 hero1.id 在 array2 中不存在，或者 hero2.winner 不等于 "0x0000000000000000000000000000000000000000"
+        // 则过滤掉 hero1
+        return aucFind && aucFind.open == true && aucFind.winner == '0x0000000000000000000000000000000000000000';
+    });
+
+    return finalHeroes;
+}
+
+function getAuctionStatus(_chain, _heroId) {
+    return new Promise(async (resolve, reject) => {
+        // 这里你需要替换为你的实际接口调用代码
+        // 例如使用fetch或者axios去获取数据
+        // fetch(`your_api_endpoint/${id}`).then(response => resolve(response.ok));
+        let result;
+        try {
+            result = await isAssistingOnAucntion(_chain, _heroId);
+            resolve(result);
+        } catch (error) {
+            console.log(error);
+            reject(error);
+        }
+
+    });
 }
 
 
@@ -207,6 +313,8 @@ async function fetchAssistingHeroes(_hero) {
     let assistingHeroesProcessed = normalizeHeroes(assistingHeroes);
     // console.log(assistingHeroesProcessed);
 
+    assistingHeroesProcessed = assistingHeroesProcessed.filter(hero => hero.network != 'hmy');
+
     return assistingHeroesProcessed;
 
 }
@@ -243,30 +351,79 @@ function tagAssistingHeroes(_hero, _assistingHeroes) {
         hero.matchTable = [shortId];
 
         if (hero.active1 == targetAcitve1) {
-            hero.score += 1;
-            hero.matchDesc += " 主动技能1匹配";
-            hero.matchTable.push(1);
+            if (hero.active1 >= 16 && hero.active1 <= 19) {
+                hero.score += 10;
+                hero.matchDesc += " 主动技能1匹配(Advanced)";
+                hero.matchTable.push(10);
+            }
+            else if (hero.active1 >= 24 && hero.active1 <= 25) {
+                hero.score += 20;
+                hero.matchDesc += " 主动技能1匹配(Elite)";
+                hero.matchTable.push(20);
+            }
+            else {
+                hero.score += 1;
+                hero.matchDesc += " 主动技能1匹配";
+                hero.matchTable.push(1);
+            }
+
         } else {
             hero.matchTable.push(0)
         }
         if (hero.active2 == targetAcitve2) {
-            hero.score += 1;
-            hero.matchDesc += " 主动技能2匹配";
-            hero.matchTable.push(1);
+            if (hero.active2 >= 16 && hero.active2 <= 19) {
+                hero.score += 10;
+                hero.matchDesc += " 主动技能2匹配(Advanced)";
+                hero.matchTable.push(10);
+            }
+            else if (hero.active2 >= 24 && hero.active2 <= 25) {
+                hero.score += 20;
+                hero.matchDesc += " 主动技能2匹配(Elite)";
+                hero.matchTable.push(20);
+            }
+            else {
+                hero.score += 1;
+                hero.matchDesc += " 主动技能2匹配";
+                hero.matchTable.push(1);
+            }
         } else {
             hero.matchTable.push(0)
         }
         if (hero.passive1 == targetPassive1) {
-            hero.score += 1;
-            hero.matchDesc += " 被动技能1匹配";
-            hero.matchTable.push(1);
+            if (hero.passive1 >= 16 && hero.passive1 <= 19) {
+                hero.score += 10;
+                hero.matchDesc += " 被动技能1匹配(Advanced)";
+                hero.matchTable.push(10);
+            }
+            else if (hero.passive1 >= 24 && hero.passive1 <= 25) {
+                hero.score += 20;
+                hero.matchDesc += " 被动技能1匹配(Elite)";
+                hero.matchTable.push(20);
+            }
+            else {
+                hero.score += 1;
+                hero.matchDesc += " 被动技能1匹配";
+                hero.matchTable.push(1);
+            }
         } else {
             hero.matchTable.push(0)
         }
         if (hero.passive2 == targetPassive2) {
-            hero.score += 1;
-            hero.matchDesc += " 被动技能2匹配";
-            hero.matchTable.push(1);
+            if (hero.passive2 >= 16 && hero.passive2 <= 19) {
+                hero.score += 10;
+                hero.matchDesc += " 被动技能2匹配(Advanced)";
+                hero.matchTable.push(10);
+            }
+            else if (hero.passive2 >= 24 && hero.passive2 <= 25) {
+                hero.score += 20;
+                hero.matchDesc += " 被动技能2匹配(Elite)";
+                hero.matchTable.push(20);
+            }
+            else {
+                hero.score += 1;
+                hero.matchDesc += " 被动技能2匹配";
+                hero.matchTable.push(1);
+            }
         } else {
             hero.matchTable.push(0)
         }
@@ -300,6 +457,8 @@ function tagAssistingHeroes(_hero, _assistingHeroes) {
         }
 
         hero.matchTable.push(hero.network);
+
+        hero.matchTable.push(hero.rarity);
         // count.push(score);
     }
 
@@ -355,6 +514,26 @@ function createTable(summonInfoHeaders, summonInfoRows) {
     summonInfoRows.forEach(rowData => {
         const tr = $('<tr>');
         const firstColumn = $('<th>').text(rowData[0]).appendTo(tr);
+        // 根据 rowData[10] 的值设置背景颜色
+        switch (rowData[10]) {
+            case 0:
+                firstColumn.addClass('color-common');
+                break;
+            case 1:
+                firstColumn.addClass('color-uncommon');
+                break;
+            case 2:
+                firstColumn.addClass('color-rare');
+                break;
+            case 3:
+                firstColumn.addClass('color-legendary');
+                break;
+            case 4:
+                firstColumn.addClass('color-mythic');
+                break;
+            default:
+                console.error('Invalid value for rowData[10]');
+        }
         // 添加点击事件处理器
         firstColumn.on('click', () => {
             navigator.clipboard.writeText(rowData[0]);
@@ -371,10 +550,25 @@ function createTable(summonInfoHeaders, summonInfoRows) {
                 toast.remove();
             });
         });
-        $('<td>').text(rowData[1] > 0 ? '\u2713' : '').appendTo(tr);
-        $('<td>').text(rowData[2] > 0 ? '\u2713' : '').appendTo(tr);
-        $('<td>').text(rowData[3] > 0 ? '\u2713' : '').appendTo(tr);
-        $('<td>').text(rowData[4] > 0 ? '\u2713' : '').appendTo(tr);
+
+        for (let k = 1; k < 5; k++) {
+            if (rowData[k] == 1) {
+                $('<td>').text('\u2713').appendTo(tr);
+            } else if (rowData[k] == 10) {
+                $('<td>').text('Adv').appendTo(tr);
+            } else if (rowData[k] == 20) {
+                $('<td>').text('Elite').appendTo(tr);
+            }else{
+                $('<td>').text('').appendTo(tr);
+            }
+
+        }
+
+
+        // $('<td>').text(rowData[1] > 0 ? '\u2713' : '').appendTo(tr);
+        // $('<td>').text(rowData[2] > 0 ? '\u2713' : '').appendTo(tr);
+        // $('<td>').text(rowData[3] > 0 ? '\u2713' : '').appendTo(tr);
+        // $('<td>').text(rowData[4] > 0 ? '\u2713' : '').appendTo(tr);
         $('<td>').text(rowData[5] > 0 ? '\u2713' : '').appendTo(tr);
 
         let levelDes;
@@ -427,7 +621,7 @@ function createDropdownMenu(table) {
         .attr('data-bs-toggle', 'tooltip')
         .attr('data-bs-placement', 'right')
         .attr('data-bs-title', `A1 represents active1, P1 represents passive1, SC represents subClass, 
-        LV represents level, P1 represents rental price, P2 represents summoning price, NW represents network. The mainClass, 
+        LV represents level, F1 represents rental fee, F2 represents summoning fee, NW represents network. Adv represents advanced skill matched, Elite represents elite skill matched. Color means the rarity of the hero.  The mainClass, 
         summonRemain, and generation of the heroes in the table have already been matched. Click hero ID to copy.`);
 
     const dropdownMenu = $('<div>')
